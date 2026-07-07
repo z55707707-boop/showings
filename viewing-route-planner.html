@@ -330,6 +330,14 @@
     <p class="section-label">案件分析</p>
     <p class="section-sub">把案件頁面上看得到的文字（地址、社區名稱、服務門市）直接複製貼上，AI 用讀文字來抓資訊，成功率最高。⚠ 純網址（尤其動態網址、一長串英數亂碼那種）AI 常常讀不到內容，建議還是貼文字。</p>
     <textarea id="caseInput" rows="4" placeholder="請貼上案件頁面的文字內容（地址、社區名稱、服務門市…），效果比只貼網址好很多"></textarea>
+    <div class="afield" style="margin-top:2px;">
+      <label>或上傳案件頁面截圖（網址讀不到內容時最好用，AI 用「看」的分析）</label>
+      <input type="file" id="caseImageInput" accept="image/*" style="width:100%;font-size:13px;">
+      <div id="caseImagePreviewWrap" style="display:none;margin-top:8px;">
+        <img id="caseImagePreview" style="max-width:100%;border-radius:8px;border:1px solid #dbe3ea;">
+        <button type="button" id="removeCaseImage" class="icon-btn danger" style="margin-top:4px;">✕ 移除截圖</button>
+      </div>
+    </div>
     <button class="add-stop" id="analyzeBtn">AI 分析地址與鑰匙門市</button>
     <div class="analyze-status" id="analyzeStatus"></div>
 
@@ -937,41 +945,89 @@ document.getElementById('copyClientItinerary').addEventListener('click', async (
   catch(e) { document.getElementById('toast').textContent = '複製失敗，請手動選取。'; }
 });
 
-/* ---------- Case link analyzer ---------- */
+/* ---------- Case link/text/image analyzer ---------- */
+let caseImageBase64 = null;
+let caseImageMediaType = null;
+
+document.getElementById('caseImageInput').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    const dataUrl = reader.result;
+    caseImageBase64 = dataUrl.split(',')[1];
+    caseImageMediaType = file.type || 'image/jpeg';
+    document.getElementById('caseImagePreview').src = dataUrl;
+    document.getElementById('caseImagePreviewWrap').style.display = 'block';
+  };
+  reader.readAsDataURL(file);
+});
+
+document.getElementById('removeCaseImage').addEventListener('click', () => {
+  caseImageBase64 = null;
+  caseImageMediaType = null;
+  document.getElementById('caseImageInput').value = '';
+  document.getElementById('caseImagePreviewWrap').style.display = 'none';
+});
+
 document.getElementById('analyzeBtn').addEventListener('click', async () => {
   const input = document.getElementById('caseInput').value.trim();
   const status = document.getElementById('analyzeStatus');
   const resultBox = document.getElementById('analyzeResult');
-  if (!input) { alert('請先貼上案件連結或廣告文字'); return; }
-  const bareUrlOnly = /^https?:\/\/\S+$/.test(input) && input.split(/\s+/).length === 1;
+  const hasImage = !!caseImageBase64;
+
+  if (!input && !hasImage) { alert('請貼上案件連結／文字，或上傳一張截圖'); return; }
+
+  const bareUrlOnly = !hasImage && /^https?:\/\/\S+$/.test(input) && input.split(/\s+/).length === 1;
   if (bareUrlOnly) {
-    const proceed = confirm('這看起來只是一個網址，AI 常常讀不到動態網頁的內容，成功率不高。\n\n建議：改成複製「頁面上看得到的文字」（地址、社區名稱、服務門市）貼上，效果會好很多。\n\n仍要嘗試用這個網址分析嗎？');
+    const proceed = confirm('這看起來只是一個網址，AI 常常讀不到動態網頁的內容，成功率不高。\n\n建議：改成複製「頁面上看得到的文字」，或直接截圖上傳。\n\n仍要嘗試用這個網址分析嗎？');
     if (!proceed) return;
   }
-  status.textContent = '分析中…（會嘗試搜尋網路資訊，可能需要幾秒）';
+
+  status.textContent = hasImage ? '分析截圖中…' : '分析中…（會嘗試讀取網頁或搜尋網路資訊，可能需要幾秒）';
   resultBox.style.display = 'none';
+
   try {
-    const resp = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
-        max_tokens: 1000,
-        system: `你是台灣房仲的助理。使用者會貼上一個其他仲介網站的案件連結，或一段廣告文字。
+    const systemPrompt = `你是台灣房仲的助理。使用者會提供一個其他仲介網站的案件連結、一段廣告文字，或是一張案件頁面的截圖。
 請盡量找出以下資訊（找不到就留空字串，不要編造）：
 1. community_name：社區或建案名稱
 2. address：物件正確地址（含縣市、路名、門牌，越完整越好）
 3. agent_company：委刊 / 服務的仲介公司與門市名稱
 4. key_store_address：該服務門市的地址（用來借鑰匙）
+如果收到的是截圖，直接從圖片畫面中讀取文字資訊即可，不需要上網查。
 如果輸入包含網址，請優先直接用 web_fetch 讀取該網址的內容；如果讀不到內容或找不到需要的資訊，再用 web_search 搜尋該網址或其中關鍵字來補齊。
 只回傳 JSON，不要有任何其他文字、說明或 Markdown 符號，格式必須是：
-{"community_name":"","address":"","agent_company":"","key_store_address":""}`,
-        messages: [{ role: 'user', content: input }],
-        tools: [
-          { type: 'web_fetch_20260318', name: 'web_fetch', max_uses: 5 },
-          { type: 'web_search_20250305', name: 'web_search', max_uses: 3 }
-        ]
-      })
+{"community_name":"","address":"","agent_company":"","key_store_address":""}`;
+
+    let messageContent;
+    let tools;
+    if (hasImage) {
+      const contentBlocks = [
+        { type: 'image', source: { type: 'base64', media_type: caseImageMediaType, data: caseImageBase64 } }
+      ];
+      contentBlocks.push({ type: 'text', text: input ? `補充文字：${input}` : '請分析這張房仲案件截圖。' });
+      messageContent = contentBlocks;
+      tools = undefined; // pure vision read, no network tools needed
+    } else {
+      messageContent = input;
+      tools = [
+        { type: 'web_fetch_20260318', name: 'web_fetch', max_uses: 5 },
+        { type: 'web_search_20250305', name: 'web_search', max_uses: 3 }
+      ];
+    }
+
+    const body = {
+      model: 'claude-sonnet-4-6',
+      max_tokens: 1000,
+      system: systemPrompt,
+      messages: [{ role: 'user', content: messageContent }]
+    };
+    if (tools) body.tools = tools;
+
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
     });
     const data = await resp.json();
     const textBlocks = (data.content || []).filter(b => b.type === 'text').map(b => b.text).join('\n');
@@ -986,7 +1042,9 @@ document.getElementById('analyzeBtn').addEventListener('click', async () => {
     resultBox.style.display = 'block';
     status.textContent = '分析完成，請核對後再加入路線（AI 判讀僅供參考）。';
   } catch (e) {
-    status.textContent = '分析失敗。可能原因：這個網站的內容是打開後才用程式跑出來的（AI 讀不到），或找不到相關資料。建議改貼頁面上的文字內容，或手動填入下方帶看順序。';
+    status.textContent = hasImage
+      ? '截圖分析失敗，請確認網路連線後再試一次，或直接手動填入下方帶看順序。'
+      : '分析失敗。可能原因：這個網站的內容是打開後才用程式跑出來的（AI 讀不到），或找不到相關資料。建議改貼文字或截圖上傳，或手動填入下方帶看順序。';
   }
 });
 
