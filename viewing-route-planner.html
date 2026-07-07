@@ -1,0 +1,1225 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>帶看系統</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink-navy:#12233d;
+    --blueprint:#173a5e;
+    --line-cyan:#7fc8e8;
+    --line-cyan-dim:#3f6b85;
+    --paper:#eef2f6;
+    --paper-2:#ffffff;
+    --ink-text:#16202c;
+    --ink-soft:#5b6b7c;
+    --brass:#c9a227;
+    --brass-dark:#8f7317;
+    --danger:#c0533e;
+    --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      linear-gradient(var(--ink-navy), var(--ink-navy)) fixed,
+      repeating-linear-gradient(0deg, rgba(127,200,232,0.06) 0 1px, transparent 1px 28px),
+      repeating-linear-gradient(90deg, rgba(127,200,232,0.06) 0 1px, transparent 1px 28px);
+    background-color:var(--ink-navy);
+    color:var(--ink-text);
+    font-family:'Inter',sans-serif;
+    min-height:100vh;
+    padding-bottom:60px;
+  }
+  .wrap{max-width:640px;margin:0 auto;padding:28px 18px 40px;}
+
+  header{padding:6px 4px 18px;}
+  .eyebrow{
+    display:flex;align-items:center;gap:8px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;letter-spacing:.12em;
+    color:var(--line-cyan);text-transform:uppercase;
+    margin-bottom:10px;
+  }
+  .compass{width:16px;height:16px;flex:none;}
+  .brand-row{display:flex;align-items:center;gap:12px;margin-bottom:4px;}
+  .logo-img{
+    width:52px;height:52px;border-radius:50%;object-fit:cover;flex:none;
+    border:2px solid var(--line-cyan);box-shadow:0 4px 14px rgba(0,0,0,.3);
+  }
+  h1{
+    font-family:'Fraunces',serif;
+    font-weight:600;
+    font-size:clamp(26px,7vw,34px);
+    color:#f4f7fa;
+    margin:0 0 6px;
+    letter-spacing:-.01em;
+  }
+  .contact-line{
+    display:flex;flex-wrap:wrap;gap:10px 16px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12.5px;color:#a9bacb;
+    margin:0 0 4px;
+  }
+  .contact-line a{color:var(--line-cyan);text-decoration:none;}
+  .contact-line a:hover{text-decoration:underline;}
+
+  .profile-panel{
+    background:rgba(255,255,255,.05);
+    border:1px solid rgba(127,200,232,.2);
+    border-radius:14px;
+    padding:12px 12px;
+    margin-top:14px;
+    display:grid;grid-template-columns:1fr;gap:8px;
+  }
+  .profile-panel .prow{display:flex;gap:8px;}
+  .profile-panel input{
+    flex:1;background:rgba(255,255,255,.06);
+    border:1px solid rgba(127,200,232,.25);
+    border-radius:9px;padding:9px 10px;
+    color:#eef2f6;font-family:'Inter',sans-serif;font-size:13.5px;
+    outline:none;
+  }
+  .profile-panel input::placeholder{color:#7e93a8;}
+  .profile-panel input:focus{border-color:var(--line-cyan);}
+  .profile-hint{font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:#7e93a8;margin:2px 2px 0;}
+
+  .panel{
+    background:var(--paper);
+    border-radius:20px;
+    padding:22px 16px 20px;
+    box-shadow:0 20px 50px rgba(0,0,0,.35);
+    margin-top:18px;
+  }
+  header + .panel{margin-top:0;}
+
+  .section-label{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11.5px;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    margin:0 0 14px 4px;
+  }
+  .section-sub{
+    font-size:12.5px;color:var(--ink-soft);margin:-8px 4px 14px;line-height:1.5;
+  }
+  .privacy-note{
+    font-size:12px;color:var(--brass-dark);background:#fbf3df;border:1px solid #ecdca8;
+    border-radius:10px;padding:8px 10px;margin:0 2px 14px;line-height:1.5;
+  }
+
+  /* ---- Case analyzer ---- */
+  textarea#caseInput{
+    width:100%;resize:vertical;
+    border:1.5px solid #d7e0e8;border-radius:12px;
+    padding:11px 12px;font-family:'Inter',sans-serif;font-size:14.5px;
+    color:var(--ink-text);outline:none;margin-bottom:10px;
+    background:#fff;
+  }
+  textarea#caseInput:focus{border-color:var(--brass);}
+  .analyze-status{
+    font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink-soft);
+    min-height:16px;margin:6px 2px 0;
+  }
+  .analyze-result{
+    margin-top:14px;background:#fff;border:1px solid #dbe3ea;border-radius:14px;padding:14px;
+  }
+  .afield{margin-bottom:10px;}
+  .afield label{
+    display:block;font-family:'IBM Plex Mono',monospace;font-size:11px;
+    color:var(--ink-soft);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;
+  }
+  .afield input{
+    width:100%;border:none;border-bottom:1.5px solid #e1e7ec;
+    padding:6px 2px;font-size:14.5px;color:var(--ink-text);outline:none;background:transparent;
+  }
+  .afield input:focus{border-bottom-color:var(--brass);}
+  .a-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;}
+  .a-actions button{
+    flex:1;min-width:120px;
+    border:1.5px solid var(--blueprint);border-radius:10px;
+    background:transparent;color:var(--blueprint);
+    font-family:'Inter',sans-serif;font-weight:600;font-size:13px;
+    padding:9px 6px;cursor:pointer;
+  }
+  .a-actions button.solid{background:var(--blueprint);color:#fff;}
+  .a-actions button.gold{border-color:var(--brass);color:var(--brass-dark);}
+
+  /* Route list */
+  .route{position:relative;padding-left:6px;}
+  .stop{position:relative;display:flex;gap:12px;padding-left:6px;margin-bottom:2px;}
+  .stop .rail{flex:none;width:30px;display:flex;flex-direction:column;align-items:center;}
+  .stop .node{
+    width:30px;height:30px;border-radius:50%;
+    background:var(--blueprint);border:2px solid var(--line-cyan);color:var(--line-cyan);
+    font-family:'IBM Plex Mono',monospace;font-size:12.5px;font-weight:600;
+    display:flex;align-items:center;justify-content:center;flex:none;z-index:2;
+  }
+  .stop .node.key{border-color:var(--brass);color:var(--brass);}
+  .stop .rail .thread{
+    width:2px;flex:1;
+    background:repeating-linear-gradient(0deg, var(--line-cyan-dim) 0 4px, transparent 4px 8px);
+    margin:2px 0;min-height:18px;
+  }
+  .stop:last-child .rail .thread{display:none;}
+
+  .card{flex:1;background:var(--paper-2);border:1px solid #dbe3ea;border-radius:var(--radius);padding:12px 12px 10px;margin-bottom:16px;}
+  .type-toggle{display:flex;gap:6px;margin-bottom:9px;}
+  .type-toggle button{
+    flex:1;padding:6px 4px;border-radius:8px;border:1.5px solid #e1e7ec;
+    background:#fff;font-family:'Inter',sans-serif;font-size:12px;font-weight:600;
+    color:var(--ink-soft);cursor:pointer;
+  }
+  .type-toggle button.active.property{background:#e7f0f7;border-color:var(--blueprint);color:var(--blueprint);}
+  .type-toggle button.active.key{background:#fbf3df;border-color:var(--brass);color:var(--brass-dark);}
+
+  .card .row1{display:flex;gap:8px;margin-bottom:8px;}
+  .card input[type="text"]{
+    width:100%;border:none;border-bottom:1.5px solid #e1e7ec;background:transparent;
+    font-family:'Inter',sans-serif;padding:5px 2px;font-size:15px;color:var(--ink-text);outline:none;
+  }
+  .card input[type="text"]:focus{border-bottom-color:var(--brass);}
+  .label-input{font-weight:600;font-size:14px;color:var(--ink-soft);}
+  .addr-input{font-size:15.5px;}
+  .price-input{
+    width:100%;background:#fff3ee;border:1.5px dashed #e3b7a8!important;border-radius:8px;
+    padding:8px 10px!important;color:#7a3a2a;font-family:'IBM Plex Mono',monospace;font-size:13px;outline:none;
+  }
+  .price-input:focus{border-color:var(--danger)!important;border-style:solid!important;}
+  .price-hint{font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:#a05a45;margin:-4px 0 8px 2px;}
+  .more-fields{margin-top:4px;margin-bottom:8px;}
+  .more-fields summary{
+    cursor:pointer;list-style:none;font-family:'IBM Plex Mono',monospace;font-size:11.5px;
+    color:var(--blueprint);padding:6px 2px;user-select:none;
+  }
+  .more-fields summary::-webkit-details-marker{display:none;}
+  .more-fields summary::before{content:'▸ ';}
+  .more-fields[open] summary::before{content:'▾ ';}
+  .more-fields .afield{margin-top:8px;}
+  .more-fields textarea{
+    width:100%;border:none;border-bottom:1.5px solid #e1e7ec;padding:6px 2px;
+    font-size:14px;color:var(--ink-text);outline:none;background:transparent;font-family:'Inter',sans-serif;resize:vertical;
+  }
+  .more-fields textarea:focus{border-bottom-color:var(--brass);}
+  .note-field{background:#fff3ee!important;border:1.5px dashed #e3b7a8!important;border-radius:8px;padding:8px 10px!important;color:#7a3a2a;font-family:'IBM Plex Mono',monospace;font-size:12.5px;}
+  .note-field:focus{border-color:var(--danger)!important;border-style:solid!important;}
+
+  /* client view extras */
+  .greeting{background:#fff;border:1px solid #dbe3ea;border-radius:14px;padding:14px;margin-bottom:16px;font-size:14.5px;line-height:1.7;color:var(--ink-text);}
+  .jump-row{display:flex;gap:8px;overflow-x:auto;padding-bottom:8px;margin-bottom:16px;}
+  .jump-pill{
+    flex:none;background:#fff;border:1.5px solid var(--blueprint);color:var(--blueprint);
+    border-radius:20px;padding:7px 13px;font-family:'IBM Plex Mono',monospace;font-size:12px;
+    text-decoration:none;white-space:nowrap;
+  }
+  .stop-price{font-family:'Fraunces',serif;font-weight:600;font-size:16px;color:var(--brass-dark);margin:2px 0 4px;}
+  .stop-info{font-size:13px;color:var(--ink-soft);margin-bottom:8px;}
+  .stop-pin{display:inline-block;margin:6px 0 2px;font-size:13px;color:var(--blueprint);text-decoration:none;font-weight:600;}
+  .amenity-list{display:flex;flex-direction:column;gap:4px;margin-top:8px;}
+  .amenity-list a{font-size:12.5px;color:var(--ink-soft);text-decoration:none;border-bottom:1px dotted #cfd8e0;padding-bottom:2px;}
+  .amenity-list a:hover{color:var(--blueprint);}
+  .agent-note-box{
+    margin-top:10px;background:#fff3ee;border:1px dashed #e3b7a8;border-radius:10px;padding:10px 12px;
+    font-family:'IBM Plex Mono',monospace;font-size:12px;color:#7a3a2a;white-space:pre-wrap;
+  }
+  .time-badge{
+    display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:11.5px;
+    color:var(--line-cyan-dim);background:#eef2f6;border-radius:6px;padding:2px 8px;margin-bottom:6px;
+  }
+  .card .row2{display:flex;justify-content:flex-end;gap:4px;margin-top:6px;}
+  .icon-btn{border:none;background:transparent;cursor:pointer;width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--ink-soft);}
+  .icon-btn:hover{background:#eef1f4;color:var(--ink-text);}
+  .icon-btn.danger:hover{background:#fbe9e5;color:var(--danger);}
+  .icon-btn:disabled{opacity:.25;cursor:default;background:none;}
+
+  .add-stop{
+    width:100%;display:flex;align-items:center;justify-content:center;gap:8px;padding:12px;
+    border-radius:var(--radius);border:1.5px dashed #b9c6d2;background:transparent;color:var(--ink-soft);
+    font-family:'Inter',sans-serif;font-weight:600;font-size:14.5px;cursor:pointer;margin-top:2px;
+  }
+  .add-stop:hover{border-color:var(--brass);color:var(--brass-dark);}
+  .add-row{display:flex;gap:10px;margin-top:2px;}
+  .add-row .add-stop{margin-top:0;}
+
+  .modes{display:flex;gap:8px;margin:18px 4px 4px;}
+  .mode-btn{
+    flex:1;padding:9px 4px;border-radius:10px;border:1.5px solid #d7e0e8;background:#fff;
+    font-family:'Inter',sans-serif;font-size:13.5px;font-weight:600;color:var(--ink-soft);cursor:pointer;
+  }
+  .mode-btn.active{background:var(--blueprint);border-color:var(--blueprint);color:#fff;}
+
+  .warn{
+    font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--brass-dark);
+    background:#fbf3df;border:1px solid #ecdca8;border-radius:10px;padding:8px 10px;margin:12px 4px 0;
+  }
+
+  .generate-btn{
+    width:100%;margin-top:18px;padding:15px;border:none;border-radius:var(--radius);
+    background:var(--brass);color:#241d05;font-family:'Fraunces',serif;font-weight:600;font-size:17px;
+    cursor:pointer;box-shadow:0 8px 18px rgba(201,162,39,.35);text-align:center;text-decoration:none;display:block;
+  }
+  .generate-btn:active{transform:translateY(1px);}
+
+  .result{margin-top:16px;}
+  .share-block{margin-top:16px;}
+  .share-block:first-child{margin-top:0;}
+  .share-title{font-family:'IBM Plex Mono',monospace;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);margin:0 0 6px 2px;}
+  .share-title.you{color:var(--danger);}
+  .share-title.client{color:var(--blueprint);}
+  .link-box{display:flex;gap:8px;align-items:center;background:#fff;border:1px solid #dbe3ea;border-radius:12px;padding:10px 10px;}
+  .link-box input{flex:1;border:none;outline:none;background:transparent;font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink-soft);}
+  .actions{display:flex;gap:10px;margin-top:10px;flex-wrap:wrap;}
+  .actions a, .actions button{
+    flex:1;min-width:130px;text-align:center;text-decoration:none;padding:11px 8px;border-radius:10px;
+    font-family:'Inter',sans-serif;font-weight:600;font-size:13.5px;cursor:pointer;border:1.5px solid var(--blueprint);
+  }
+  .btn-primary{background:var(--blueprint);color:#fff;}
+  .btn-ghost{background:transparent;color:var(--blueprint);}
+  .toast{font-family:'IBM Plex Mono',monospace;font-size:12px;color:#3f7a4d;margin-top:8px;min-height:16px;}
+
+  .saved-panel{margin-top:18px;}
+  .saved-item{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid #dbe3ea;border-radius:12px;padding:10px 12px;margin-bottom:8px;}
+  .saved-item .name{flex:1;font-weight:600;font-size:14.5px;}
+  .saved-item .meta{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink-soft);}
+  .saved-item button{border:none;background:transparent;cursor:pointer;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;padding:6px 8px;border-radius:8px;color:var(--blueprint);}
+  .saved-item button.del{color:var(--danger);}
+  .saved-empty{font-size:13px;color:var(--ink-soft);padding:6px 4px;}
+
+  footer{text-align:center;color:#7488a0;font-size:11.5px;font-family:'IBM Plex Mono',monospace;margin-top:26px;letter-spacing:.04em;}
+
+  /* client view */
+  #clientView .card{padding:14px;}
+  #clientView .stop-title{font-weight:600;font-size:15px;margin-bottom:3px;}
+  #clientView .stop-addr{color:var(--ink-soft);font-size:14px;}
+</style>
+</head>
+<body>
+
+<!-- ===================== EDITOR (agent) VIEW ===================== -->
+<div class="wrap" id="editorView">
+  <header>
+    <div class="eyebrow">
+      <svg class="compass" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9.5" stroke="currentColor" stroke-width="1.4"/><path d="M12 6.5 14 12 12 17.5 10 12Z" fill="currentColor"/></svg>
+      帶看系統
+    </div>
+    <div class="brand-row">
+      <img class="logo-img" id="logoImg" alt="logo">
+      <h1 id="pageTitle" style="margin:0;">帶看系統</h1>
+    </div>
+    <div class="contact-line" id="contactLine"></div>
+
+    <div class="profile-panel">
+      <div class="prow"><input type="text" id="profName" placeholder="你的姓名（例如：震倫）"></div>
+      <div class="prow">
+        <input type="text" id="profPhone" placeholder="聯絡電話">
+        <input type="text" id="profLine" placeholder="LINE 連結網址（https://line.me/...）">
+      </div>
+      <div class="profile-hint">存在這台裝置／你的帳號上，只有你能看到並編輯。</div>
+    </div>
+  </header>
+
+  <div class="panel" id="loadNotice" style="display:none;">
+    <p class="analyze-status" id="loadNoticeText"></p>
+  </div>
+
+  <div class="panel">
+    <p class="section-label">案件分析</p>
+    <p class="section-sub">把案件頁面上看得到的文字（地址、社區名稱、服務門市）直接複製貼上，AI 用讀文字來抓資訊，成功率最高。⚠ 純網址（尤其動態網址、一長串英數亂碼那種）AI 常常讀不到內容，建議還是貼文字。</p>
+    <textarea id="caseInput" rows="4" placeholder="請貼上案件頁面的文字內容（地址、社區名稱、服務門市…），效果比只貼網址好很多"></textarea>
+    <button class="add-stop" id="analyzeBtn">AI 分析地址與鑰匙門市</button>
+    <div class="analyze-status" id="analyzeStatus"></div>
+
+    <div class="analyze-result" id="analyzeResult" style="display:none;">
+      <div class="afield"><label>社區 / 建案名稱</label><input type="text" id="aCommunity"></div>
+      <div class="afield"><label>物件地址</label><input type="text" id="aAddress"></div>
+      <div class="afield"><label>服務門市（委托 / 借鑰匙）</label><input type="text" id="aCompany"></div>
+      <div class="afield"><label>門市地址</label><input type="text" id="aKeyAddress"></div>
+      <div class="a-actions">
+        <button class="solid" id="addBoth">加入鑰匙+帶看地點</button>
+        <button id="addPropertyOnly">只加帶看地點</button>
+        <button id="addKeyOnly">只加鑰匙地點</button>
+      </div>
+      <div class="a-actions">
+        <button class="gold" id="openKeyMap">在 Google 地圖開啟門市位置</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <p class="section-label">帶看順序</p>
+    <p class="privacy-note">🔒 底價備註跟「借鑰匙」地點只有你自己看得到，分享給客戶的連結完全不會出現這兩項。</p>
+    <div class="route" id="route"></div>
+    <div class="add-row">
+      <button class="add-stop" id="addStop">＋ 帶看地點</button>
+      <button class="add-stop" id="addKeyStop">＋ 借鑰匙地點</button>
+    </div>
+
+    <div class="modes" id="modes">
+      <button class="mode-btn active" data-mode="driving">開車</button>
+      <button class="mode-btn" data-mode="two-wheeler">機車</button>
+      <button class="mode-btn" data-mode="transit">大眾運輸</button>
+      <button class="mode-btn" data-mode="walking">步行</button>
+    </div>
+
+    <button class="add-stop" id="suggestOrderBtn" style="margin-top:12px;">AI 建議帶看順序（依地址判斷較順路）</button>
+    <div class="analyze-status" id="suggestStatus"></div>
+
+    <div class="warn" id="warn" style="display:none;"></div>
+
+    <div class="afield" style="margin-top:16px;"><label>客戶姓名（選填，會顯示在客戶版標題與問候語）</label><input type="text" id="clientNameInput" placeholder="例如：陳小姐"></div>
+    <div class="afield"><label>帶看時間敘述（選填）</label><input type="text" id="visitLabelInput" placeholder="例如：明天下午 2:00 開始"></div>
+
+    <div class="share-block" style="margin-top:18px;">
+      <p class="share-title client">📄 免登入靜態網頁（跟喵爸那種一樣，誰都不用登入）</p>
+      <p class="section-sub" style="margin:0 2px 10px;">下載成一個獨立的 .html 檔案，開啟時不會呼叫任何登入或帳號機制。客戶版可以直接把檔案傳給客戶開，或上傳到 GitHub Pages 之類的免費空間變成網址分享。</p>
+      <div class="actions">
+        <button id="exportClientBtn" class="btn-primary">下載客戶版網頁</button>
+        <button id="exportAgentBtn" class="btn-ghost">下載我的控場版（含備註）</button>
+      </div>
+      <div class="toast" id="exportToast"></div>
+    </div>
+
+    <details class="more-fields" style="margin-top:18px;">
+      <summary>進階：Claude 帳號分享連結（需要登入，但連結產生後可以持續更新內容）</summary>
+      <button class="generate-btn" id="generate" style="margin-top:10px;">產生帶看連結</button>
+      <div class="result" id="result" style="display:none;">
+        <div class="share-block">
+          <p class="share-title you">🔒 我的帶看連結（含底價、借鑰匙，只有你看得到）</p>
+          <div class="link-box"><input type="text" id="agentLinkOutput" readonly></div>
+          <div class="actions">
+            <a href="#" target="_blank" id="openAgentMaps" class="btn-primary">導航（含借鑰匙）</a>
+            <button id="copyAgentLink" class="btn-ghost">複製我的連結</button>
+          </div>
+        </div>
+
+        <div class="share-block">
+          <p class="share-title client">👤 客戶分享連結（不含底價、不含借鑰匙）</p>
+          <div class="link-box"><input type="text" id="clientLinkOutput" readonly></div>
+          <div class="actions">
+            <a href="#" target="_blank" id="openClientMaps" class="btn-primary">預覽客戶導航</a>
+            <button id="copyClientLink" class="btn-ghost">複製客戶連結</button>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button id="copyFullItinerary" class="btn-ghost">複製完整文字（含底價，自己用）</button>
+          <button id="copyClientItinerary" class="btn-ghost">複製客戶版文字</button>
+        </div>
+        <div class="toast" id="toast"></div>
+      </div>
+    </details>
+  </div>
+
+  <div class="panel saved-panel">
+    <p class="section-label">常用帶看範本</p>
+    <p class="section-sub">存起來給自己下次快速套用，不會分享出去。</p>
+    <div id="savedList"></div>
+    <button class="add-stop" id="saveRoute" style="margin-top:10px;">儲存目前這條路線為範本</button>
+  </div>
+
+  <footer>GOOGLE MAPS · MULTI-STOP DIRECTIONS</footer>
+</div>
+
+<!-- ===================== CLIENT VIEW ===================== -->
+<div class="wrap" id="clientView" style="display:none;">
+  <header>
+    <div class="eyebrow">
+      <svg class="compass" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9.5" stroke="currentColor" stroke-width="1.4"/><path d="M12 6.5 14 12 12 17.5 10 12Z" fill="currentColor"/></svg>
+      帶看行程
+    </div>
+    <div class="brand-row">
+      <img class="logo-img" id="clientLogoImg" alt="logo">
+      <h1 id="clientTitle" style="margin:0;">預約帶看系統</h1>
+    </div>
+    <div class="contact-line" id="clientContact"></div>
+  </header>
+
+  <div class="panel">
+    <div class="greeting" id="clientGreeting" style="display:none;"></div>
+    <div class="jump-row" id="jumpRow" style="display:none;"></div>
+    <div class="route" id="clientStops"></div>
+    <a href="#" target="_blank" id="clientMapsBtn" class="generate-btn">在 Google 地圖開啟導航（全程）</a>
+  </div>
+
+  <footer>GOOGLE MAPS · DIRECTIONS</footer>
+</div>
+
+<script>
+const LOGO_DATA_URI = 'data:image/jpeg;base64,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';
+document.getElementById('logoImg').src = LOGO_DATA_URI;
+document.getElementById('clientLogoImg').src = LOGO_DATA_URI;
+
+function cryptoId(){ return Math.random().toString(36).slice(2,10); }
+function escapeHtml(str){
+  return (str||'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+function baseUrl(){
+  const u = new URL(window.location.href);
+  u.search = '';
+  u.hash = '';
+  return u.toString();
+}
+
+let stops = [
+  {id: cryptoId(), type:'property', label:'', address:'', time:'', askPrice:'', info:'', amenities:'', note:''},
+  {id: cryptoId(), type:'property', label:'', address:'', time:'', askPrice:'', info:'', amenities:'', note:''}
+];
+let travelMode = 'driving';
+let currentShareId = null;
+
+/* ---------- Route rendering (editor) ---------- */
+function renderRoute(){
+  const el = document.getElementById('route');
+  el.innerHTML = '';
+  stops.forEach((s, i) => {
+    const stop = document.createElement('div');
+    stop.className = 'stop';
+    const moreFields = s.type === 'property' ? `
+        <details class="more-fields">
+          <summary>更多欄位（時間／開價／物件資訊／周邊機能／業務備註）</summary>
+          <div class="afield"><label>參觀時間（選填，例如 14:00）</label><input type="text" value="${escapeHtml(s.time)}" data-id="${s.id}" data-field="time"></div>
+          <div class="afield"><label>開價（客戶看得到，例如 1,058萬）</label><input type="text" value="${escapeHtml(s.askPrice)}" data-id="${s.id}" data-field="askPrice"></div>
+          <div class="afield"><label>物件資訊（客戶看得到，例如：電梯大樓・2房2廳2衛・屋齡13年・含車位）</label><input type="text" value="${escapeHtml(s.info)}" data-id="${s.id}" data-field="info"></div>
+          <div class="afield"><label>周邊機能（客戶看得到，一行一個，例如：🏫興仁國小 640m・走路9分）</label><textarea rows="3" data-id="${s.id}" data-field="amenities">${escapeHtml(s.amenities)}</textarea></div>
+          <div class="afield"><label>🔒 業務備註（只有你看得到：現況／開門方式／主打賣點／底價）</label><textarea rows="3" class="note-field" data-id="${s.id}" data-field="note">${escapeHtml(s.note)}</textarea></div>
+        </details>` : `
+        <details class="more-fields">
+          <summary>更多欄位（時間／備註）</summary>
+          <div class="afield"><label>時間（選填，例如 13:46）</label><input type="text" value="${escapeHtml(s.time)}" data-id="${s.id}" data-field="time"></div>
+          <div class="afield"><label>🔒 備註（只有你看得到）</label><textarea rows="2" class="note-field" data-id="${s.id}" data-field="note">${escapeHtml(s.note)}</textarea></div>
+        </details>`;
+    stop.innerHTML = `
+      <div class="rail">
+        <div class="node ${s.type==='key'?'key':''}">${s.type==='key' ? '🔑' : String(i+1).padStart(2,'0')}</div>
+        <div class="thread"></div>
+      </div>
+      <div class="card">
+        <div class="type-toggle">
+          <button type="button" class="${s.type==='property'?'active property':''}" data-action="set-property" data-id="${s.id}">🏠 帶看地點</button>
+          <button type="button" class="${s.type==='key'?'active key':''}" data-action="set-key" data-id="${s.id}">🔑 借鑰匙</button>
+        </div>
+        <div class="row1">
+          <input type="text" class="label-input" placeholder="${s.type==='key' ? '服務門市名稱' : '物件名稱（選填，例如：A案 3F）'}" value="${escapeHtml(s.label)}" data-id="${s.id}" data-field="label">
+        </div>
+        <div class="row1">
+          <input type="text" class="addr-input" placeholder="${s.type==='key' ? '門市地址' : '輸入地址或大樓名稱'}" value="${escapeHtml(s.address)}" data-id="${s.id}" data-field="address">
+        </div>
+        ${moreFields}
+        <div class="row2">
+          <button class="icon-btn" data-action="up" data-id="${s.id}" ${i===0?'disabled':''} title="上移">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 19V5M5 12l7-7 7 7" stroke="currentColor" stroke-width="2"/></svg>
+          </button>
+          <button class="icon-btn" data-action="down" data-id="${s.id}" ${i===stops.length-1?'disabled':''} title="下移">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12l7 7 7-7" stroke="currentColor" stroke-width="2"/></svg>
+          </button>
+          <button class="icon-btn danger" data-action="del" data-id="${s.id}" ${stops.length<=1?'disabled':''} title="刪除">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M4 7h16M9 7V5h6v2M6 7l1 13h10l1-13" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+      </div>
+    `;
+    el.appendChild(stop);
+  });
+  checkWarn();
+  hideResult();
+  refreshShareLinksIfActive();
+}
+
+function checkWarn(){
+  const warn = document.getElementById('warn');
+  const filled = stops.filter(s=>s.address.trim()).length;
+  if (filled > 10) {
+    warn.style.display = 'block';
+    warn.textContent = `⚠ 目前 ${filled} 個地點，Google 地圖網頁導航建議 10 站以內，站數過多可能無法完整帶入。`;
+  } else {
+    warn.style.display = 'none';
+  }
+}
+
+function hideResult(){
+  // keep result visible if we already have an active share id (so links stay visible while editing)
+  if (!currentShareId) {
+    document.getElementById('result').style.display = 'none';
+  }
+  document.getElementById('toast').textContent = '';
+}
+
+document.getElementById('route').addEventListener('input', (e) => {
+  const id = e.target.dataset.id;
+  const field = e.target.dataset.field;
+  if (!field) return;
+  const s = stops.find(x => x.id === id);
+  if (s) { s[field] = e.target.value; hideResult(); }
+});
+
+document.getElementById('route').addEventListener('click', (e) => {
+  const btn = e.target.closest('button');
+  if (!btn) return;
+  const id = btn.dataset.id;
+  const action = btn.dataset.action;
+  const idx = stops.findIndex(x => x.id === id);
+  if (idx === -1) return;
+  if (action === 'up' && idx > 0) {
+    [stops[idx-1], stops[idx]] = [stops[idx], stops[idx-1]];
+  } else if (action === 'down' && idx < stops.length-1) {
+    [stops[idx+1], stops[idx]] = [stops[idx], stops[idx+1]];
+  } else if (action === 'del') {
+    if (stops.length > 1) stops.splice(idx, 1);
+  } else if (action === 'set-property') {
+    stops[idx].type = 'property';
+  } else if (action === 'set-key') {
+    stops[idx].type = 'key';
+  }
+  renderRoute();
+});
+
+document.getElementById('addStop').addEventListener('click', () => {
+  stops.push({id: cryptoId(), type:'property', label:'', address:'', time:'', askPrice:'', info:'', amenities:'', note:''});
+  renderRoute();
+});
+document.getElementById('addKeyStop').addEventListener('click', () => {
+  stops.push({id: cryptoId(), type:'key', label:'', address:'', time:'', askPrice:'', info:'', amenities:'', note:''});
+  renderRoute();
+});
+
+document.getElementById('modes').addEventListener('click', (e) => {
+  const btn = e.target.closest('.mode-btn');
+  if (!btn) return;
+  travelMode = btn.dataset.mode;
+  document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  hideResult();
+});
+
+/* ---------- AI route order suggestion (best-effort, address-based reasoning) ---------- */
+document.getElementById('suggestOrderBtn').addEventListener('click', async () => {
+  const status = document.getElementById('suggestStatus');
+  const propertyIdx = [];
+  stops.forEach((s, i) => { if (s.type === 'property' && s.address.trim()) propertyIdx.push(i); });
+  if (propertyIdx.length < 3) { alert('至少要有 3 個帶看地點，AI 排序才有意義（少於 3 個順序差異不大）。'); return; }
+
+  status.textContent = 'AI 判斷中…（依地址推測較順的參觀順序，不是精確地圖距離）';
+  try {
+    const list = propertyIdx.map((idx, n) => ({ n, label: stops[idx].label, address: stops[idx].address }));
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 800,
+        system: `你是台灣房仲的帶看路線助理。使用者會給你一份「帶看地點」清單（JSON 陣列，每筆有 n / label / address）。
+請依照地址中的縣市、行政區、路名、巷弄等資訊，判斷一個比較不會來回繞路、地理上較順路的參觀順序（例如同一條路、同一個里/行政區的地點盡量排在一起）。
+這不需要精確的地圖距離計算，用常識判斷地理相鄰即可。
+只回傳 JSON，不要有其他文字或 Markdown，格式：
+{"order":[依照建議順序排列的 n 值陣列，必須包含所有 n 且不重複],"reasoning":"一句話說明排序邏輯（20字以內，中文）"}`,
+        messages: [{ role: 'user', content: JSON.stringify(list) }],
+        tools: [{ type: 'web_search_20250305', name: 'web_search', max_uses: 2 }]
+      })
+    });
+    const data = await resp.json();
+    const textBlocks = (data.content || []).filter(b => b.type === 'text').map(b => b.text).join('\n');
+    const cleaned = textBlocks.replace(/```json|```/g, '').trim();
+    const match = cleaned.match(/\{[\s\S]*\}/);
+    const parsed = JSON.parse(match ? match[0] : cleaned);
+    const order = parsed.order;
+    if (!Array.isArray(order) || order.length !== propertyIdx.length) throw new Error('bad order');
+
+    const reordered = order.map(n => stops[propertyIdx[n]]);
+    let ptr = 0;
+    stops = stops.map((s, i) => propertyIdx.includes(i) ? reordered[ptr++] : s);
+
+    renderRoute();
+    status.textContent = `✅ 已依建議順序排好。${parsed.reasoning ? '理由：' + parsed.reasoning : ''}（借鑰匙地點位置請自己確認是否需要調整）`;
+  } catch (e) {
+    status.textContent = '排序失敗，可能是網路問題，請手動用上下箭頭調整順序。';
+  }
+});
+
+/* ---------- Google Maps link building ---------- */
+function buildMapsLinkFromStops(list, mode){
+  const filled = list.filter(s => s.address && s.address.trim());
+  if (filled.length === 0) return null;
+  const m = mode || travelMode;
+  if (filled.length === 1) {
+    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(filled[0].address.trim())}`;
+  }
+  const addrs = filled.map(s => encodeURIComponent(s.address.trim()));
+  const origin = addrs[0];
+  const destination = addrs[addrs.length-1];
+  const waypoints = addrs.slice(1, -1);
+  let url = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}&travelmode=${m}`;
+  if (waypoints.length) url += `&waypoints=${waypoints.join('|')}`;
+  return url;
+}
+
+/* ---------- Profile ---------- */
+function updateHeader(){
+  const name = document.getElementById('profName').value.trim();
+  const phone = document.getElementById('profPhone').value.trim();
+  const line = document.getElementById('profLine').value.trim();
+  document.getElementById('pageTitle').textContent = name ? `${name}帶看系統` : '帶看系統';
+  const bits = [];
+  if (phone) bits.push(`<a href="tel:${escapeHtml(phone.replace(/[^0-9+]/g,''))}">📞 ${escapeHtml(phone)}</a>`);
+  if (line) bits.push(`<a href="${escapeHtml(line)}" target="_blank" rel="noopener">LINE 聯絡</a>`);
+  document.getElementById('contactLine').innerHTML = bits.join('　·　');
+}
+
+async function saveProfile(){
+  const profile = {
+    name: document.getElementById('profName').value.trim(),
+    phone: document.getElementById('profPhone').value.trim(),
+    line: document.getElementById('profLine').value.trim()
+  };
+  try { await window.storage.set('agent-profile', JSON.stringify(profile), false); }
+  catch(e) { /* non-critical */ }
+}
+
+const DEFAULT_PROFILE = { name: '黃震倫', phone: '0958-111-539', line: 'https://line.me/ti/p/XyeA_5AYys' };
+
+async function loadProfile(){
+  let loaded = null;
+  try {
+    const r = await window.storage.get('agent-profile', false);
+    if (r) loaded = JSON.parse(r.value);
+  } catch(e) { /* no profile yet */ }
+  const p = loaded || DEFAULT_PROFILE;
+  document.getElementById('profName').value = p.name || '';
+  document.getElementById('profPhone').value = p.phone || '';
+  document.getElementById('profLine').value = p.line || '';
+  if (!loaded) { saveProfile(); }
+  updateHeader();
+}
+
+['profName','profPhone','profLine'].forEach(id => {
+  const el = document.getElementById(id);
+  el.addEventListener('input', updateHeader);
+  el.addEventListener('blur', saveProfile);
+});
+
+/* ---------- Share link generation (private + public split) ---------- */
+function refreshShareLinksIfActive(){
+  if (!currentShareId) return;
+  const base = baseUrl();
+  document.getElementById('agentLinkOutput').value = `${base}?route=${currentShareId}&as=agent`;
+  document.getElementById('clientLinkOutput').value = `${base}?route=${currentShareId}&as=client`;
+  document.getElementById('generate').textContent = '更新帶看連結';
+}
+
+async function generateShareLinks(){
+  const filledAll = stops.filter(s => s.address.trim());
+  const propertyStops = stops.filter(s => s.type === 'property' && s.address.trim());
+  if (filledAll.length < 1) { alert('請至少輸入一個地點。'); return; }
+  if (propertyStops.length < 1) { alert('至少要有一個「帶看地點」，才能產生客戶分享連結。'); return; }
+
+  if (!currentShareId) currentShareId = cryptoId() + cryptoId();
+
+  const profile = {
+    name: document.getElementById('profName').value.trim(),
+    phone: document.getElementById('profPhone').value.trim(),
+    line: document.getElementById('profLine').value.trim()
+  };
+  const clientName = document.getElementById('clientNameInput').value.trim();
+  const visitLabel = document.getElementById('visitLabelInput').value.trim();
+
+  const privatePayload = {
+    id: currentShareId,
+    stops: stops.map(s => ({type:s.type, label:s.label, address:s.address, time:s.time||'', askPrice:s.askPrice||'', info:s.info||'', amenities:s.amenities||'', note:s.note||''})),
+    travelMode, profile, clientName, visitLabel,
+    updatedAt: Date.now()
+  };
+  const publicPayload = {
+    id: currentShareId,
+    title: clientName ? `看屋路線｜${clientName}` : (profile.name ? `${profile.name}帶看系統` : '帶看系統'),
+    clientName, visitLabel,
+    phone: profile.phone, line: profile.line,
+    travelMode,
+    stops: propertyStops.map(s => ({label:s.label, address:s.address, time:s.time||'', askPrice:s.askPrice||'', info:s.info||'', amenities:s.amenities||''})),
+    updatedAt: Date.now()
+  };
+
+  try {
+    await window.storage.set('route-private:' + currentShareId, JSON.stringify(privatePayload), false);
+    await window.storage.set('route-public:' + currentShareId, JSON.stringify(publicPayload), true);
+  } catch(e) {
+    alert('連結產生失敗，請檢查網路後再試一次。');
+    return;
+  }
+
+  const base = baseUrl();
+  const agentLink = `${base}?route=${currentShareId}&as=agent`;
+  const clientLink = `${base}?route=${currentShareId}&as=client`;
+  document.getElementById('agentLinkOutput').value = agentLink;
+  document.getElementById('clientLinkOutput').value = clientLink;
+
+  const agentMapsUrl = buildMapsLinkFromStops(filledAll);
+  const clientMapsUrl = buildMapsLinkFromStops(propertyStops);
+  document.getElementById('openAgentMaps').href = agentMapsUrl || '#';
+  document.getElementById('openClientMaps').href = clientMapsUrl || '#';
+
+  document.getElementById('generate').textContent = '更新帶看連結';
+  document.getElementById('result').style.display = 'block';
+  document.getElementById('toast').textContent = '連結已產生／更新。';
+}
+
+document.getElementById('generate').addEventListener('click', generateShareLinks);
+
+/* ---------- Static, login-free HTML export ---------- */
+function buildStopsHtmlStatic(stopsData, includeAgentExtras){
+  return stopsData.map((s, i) => {
+    const timeBadge = s.time ? `<div class="time-badge">${escapeHtml(s.time)}</div>` : '';
+    const keyBadge = s.type === 'key' ? `<div class="time-badge" style="background:#fbf3df;color:#8f7317;">🔑 借鑰匙</div>` : '';
+    const priceHtml = s.askPrice ? `<div class="stop-price">${escapeHtml(s.askPrice)}</div>` : '';
+    const infoHtml = s.info ? `<div class="stop-info">${escapeHtml(s.info)}</div>` : '';
+    let amenityHtml = '';
+    if (s.amenities && s.amenities.trim()) {
+      const lines = s.amenities.split('\n').map(parseAmenityLine).filter(Boolean);
+      if (lines.length) amenityHtml = `<div class="amenity-list">${lines.map(a => `<a href="${singlePinLink(a.query)}" target="_blank" rel="noopener">${escapeHtml(a.text)}</a>`).join('')}</div>`;
+    }
+    const noteHtml = (includeAgentExtras && s.note && s.note.trim()) ? `<div class="agent-note-box">🔒 ${escapeHtml(s.note.trim())}</div>` : '';
+    const nodeClass = s.type === 'key' ? 'key' : '';
+    const nodeLabel = s.type === 'key' ? '🔑' : String(i + 1).padStart(2, '0');
+    return `
+      <div class="stop" id="stop-${i+1}">
+        <div class="rail"><div class="node ${nodeClass}">${nodeLabel}</div><div class="thread"></div></div>
+        <div class="card">
+          ${timeBadge}${keyBadge}
+          <div class="stop-title">${escapeHtml(s.label) || (s.type === 'key' ? '借鑰匙門市' : ('帶看物件 ' + (i + 1)))}</div>
+          ${priceHtml}
+          <div class="stop-addr">${escapeHtml(s.address)}</div>
+          ${infoHtml}
+          <a class="stop-pin" href="${singlePinLink(s.address)}" target="_blank" rel="noopener">📍 導航到這裡</a>
+          ${amenityHtml}
+          ${noteHtml}
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function exportStaticHtml(mode){
+  const filledAll = stops.filter(s => s.address.trim());
+  const propertyStops = stops.filter(s => s.type === 'property' && s.address.trim());
+  if (mode === 'client' && propertyStops.length < 1) { alert('至少要有一個帶看地點，才能匯出客戶版。'); return; }
+  if (mode === 'agent' && filledAll.length < 1) { alert('請至少輸入一個地點。'); return; }
+
+  const profile = {
+    name: document.getElementById('profName').value.trim(),
+    phone: document.getElementById('profPhone').value.trim(),
+    line: document.getElementById('profLine').value.trim()
+  };
+  const clientName = document.getElementById('clientNameInput').value.trim();
+  const visitLabel = document.getElementById('visitLabelInput').value.trim();
+  const dataStops = mode === 'client' ? propertyStops : filledAll;
+
+  const title = mode === 'client'
+    ? (clientName ? `看屋路線｜${clientName}` : '看屋路線')
+    : (profile.name ? `${profile.name}帶看系統（控場版）` : '帶看系統（控場版）');
+
+  const greetingHtml = mode === 'client'
+    ? `<div class="greeting">${escapeHtml(clientName ? clientName + '您好 😊' : '您好 😊')}<br>${visitLabel ? escapeHtml(visitLabel) + '，' : ''}為您安排了 ${propertyStops.length} 間看屋行程，點下方時間可快速跳到該間 🙌</div>`
+    : `<div class="greeting">🔒 控場版（含業務備註／借鑰匙資訊，請勿外傳給客戶）<br>${visitLabel ? escapeHtml(visitLabel) + '，' : ''}共 ${filledAll.length} 站</div>`;
+
+  const jumpPillsHtml = dataStops.length > 1
+    ? `<div class="jump-row">${dataStops.map((s, i) => `<a class="jump-pill" href="#stop-${i+1}">${s.time ? escapeHtml(s.time) + ' ' : ''}${escapeHtml(s.label) || ('第' + (i + 1) + '間')} ▾</a>`).join('')}</div>`
+    : '';
+
+  const stopsHtml = buildStopsHtmlStatic(dataStops, mode === 'agent');
+  const mapsUrl = buildMapsLinkFromStops(dataStops, travelMode);
+  const mapsBtnHtml = mapsUrl ? `<a href="${mapsUrl}" target="_blank" class="generate-btn">在 Google 地圖開啟導航（全程）</a>` : '';
+
+  const contactBits = [];
+  if (profile.phone) contactBits.push(`<a href="tel:${escapeHtml(profile.phone.replace(/[^0-9+]/g, ''))}">📞 ${escapeHtml(profile.phone)}</a>`);
+  if (profile.line) contactBits.push(`<a href="${escapeHtml(profile.line)}" target="_blank" rel="noopener">LINE 聯絡</a>`);
+
+  const cssText = document.querySelector('style').textContent;
+  const logoSrc = document.getElementById('logoImg').src;
+
+  const html = `<!DOCTYPE html>
+<html lang="zh-Hant"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"><title>${escapeHtml(title)}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>${cssText}</style></head>
+<body><div class="wrap">
+<header>
+  <div class="eyebrow"><svg class="compass" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9.5" stroke="currentColor" stroke-width="1.4"/><path d="M12 6.5 14 12 12 17.5 10 12Z" fill="currentColor"/></svg>${mode === 'client' ? '帶看行程' : '帶看控場'}</div>
+  <div class="brand-row"><img class="logo-img" src="${logoSrc}" alt="logo"><h1 style="margin:0;">${escapeHtml(title)}</h1></div>
+  <div class="contact-line">${contactBits.join('　·　')}</div>
+</header>
+<div class="panel">
+  ${greetingHtml}
+  ${jumpPillsHtml}
+  <div class="route">${stopsHtml}</div>
+  ${mapsBtnHtml}
+</div>
+<footer>${mode === 'client' ? 'GOOGLE MAPS · DIRECTIONS' : '僅供業務自己使用．請勿外流'}</footer>
+</div></body></html>`;
+
+  const blob = new Blob([html], { type: 'text/html' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const safeName = (clientName || profile.name || 'route').replace(/[^\w\u4e00-\u9fa5]/g, '') || 'route';
+  const dateStr = new Date().toISOString().slice(0,10).replace(/-/g,'');
+  a.href = url;
+  a.download = mode === 'client' ? `帶看客戶版_${safeName}_${dateStr}.html` : `帶看控場版_${safeName}_${dateStr}.html`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 5000);
+
+  const toast = document.getElementById('exportToast');
+  toast.textContent = mode === 'client' ? '✅ 客戶版已下載，這個檔案打開不需要登入任何帳號。' : '✅ 控場版已下載（含備註），請自行保管，不要公開上傳。';
+}
+
+document.getElementById('exportClientBtn').addEventListener('click', () => exportStaticHtml('client'));
+document.getElementById('exportAgentBtn').addEventListener('click', () => exportStaticHtml('agent'));
+
+document.getElementById('copyAgentLink').addEventListener('click', async () => {
+  const v = document.getElementById('agentLinkOutput').value;
+  if (!v) return;
+  try { await navigator.clipboard.writeText(v); document.getElementById('toast').textContent = '已複製「我的帶看連結」'; }
+  catch(e) { document.getElementById('agentLinkOutput').select(); document.getElementById('toast').textContent = '請手動複製（已選取文字）'; }
+});
+document.getElementById('copyClientLink').addEventListener('click', async () => {
+  const v = document.getElementById('clientLinkOutput').value;
+  if (!v) return;
+  try { await navigator.clipboard.writeText(v); document.getElementById('toast').textContent = '已複製「客戶分享連結」（不含底價／鑰匙）'; }
+  catch(e) { document.getElementById('clientLinkOutput').select(); document.getElementById('toast').textContent = '請手動複製（已選取文字）'; }
+});
+
+function buildItineraryText(mode){
+  const name = document.getElementById('profName').value.trim();
+  const phone = document.getElementById('profPhone').value.trim();
+  const line = document.getElementById('profLine').value.trim();
+  const clientName = document.getElementById('clientNameInput').value.trim();
+  const visitLabel = document.getElementById('visitLabelInput').value.trim();
+  const title = mode === 'client'
+    ? (clientName ? `看屋路線｜${clientName}` : '看屋路線')
+    : (name ? `${name}帶看系統` : '帶看系統');
+  let lines = [`📍 ${title}`];
+  if (visitLabel) lines.push(visitLabel);
+  const contactBits = [];
+  if (phone) contactBits.push(`📞 ${phone}`);
+  if (line) contactBits.push(`LINE：${line}`);
+  if (contactBits.length) lines.push(contactBits.join('　'));
+  lines.push('');
+  lines.push('帶看順序：');
+  const list = mode === 'full' ? stops.filter(s=>s.address.trim()) : stops.filter(s=>s.type==='property' && s.address.trim());
+  let n = 1;
+  list.forEach(s => {
+    const timeBit = s.time.trim() ? `${s.time.trim()} ` : '';
+    if (mode === 'full') {
+      const icon = s.type === 'key' ? '🔑 借鑰匙' : '🏠 帶看';
+      const priceBit = (s.type === 'property' && s.askPrice.trim()) ? `｜開價：${s.askPrice.trim()}` : '';
+      const noteBit = s.note && s.note.trim() ? `｜備註：${s.note.trim()}` : '';
+      lines.push(`${n}. ${timeBit}${icon}${s.label.trim() ? ' - ' + s.label.trim() : ''}（${s.address.trim()}）${priceBit}${noteBit}`);
+    } else {
+      const priceBit = s.askPrice.trim() ? `　${s.askPrice.trim()}` : '';
+      lines.push(`${n}. ${timeBit}${s.label.trim() ? s.label.trim() + '　' : ''}${s.address.trim()}${priceBit}`);
+    }
+    n++;
+  });
+  const linkVal = mode === 'full' ? document.getElementById('agentLinkOutput').value : document.getElementById('clientLinkOutput').value;
+  if (linkVal) { lines.push(''); lines.push(`連結：${linkVal}`); }
+  return lines.join('\n');
+}
+
+document.getElementById('copyFullItinerary').addEventListener('click', async () => {
+  if (!currentShareId) { alert('請先按「產生帶看連結」。'); return; }
+  try { await navigator.clipboard.writeText(buildItineraryText('full')); document.getElementById('toast').textContent = '已複製完整版文字（含底價，請勿直接轉傳給客戶）'; }
+  catch(e) { document.getElementById('toast').textContent = '複製失敗，請手動選取。'; }
+});
+document.getElementById('copyClientItinerary').addEventListener('click', async () => {
+  if (!currentShareId) { alert('請先按「產生帶看連結」。'); return; }
+  try { await navigator.clipboard.writeText(buildItineraryText('client')); document.getElementById('toast').textContent = '已複製客戶版文字，可直接傳給客戶'; }
+  catch(e) { document.getElementById('toast').textContent = '複製失敗，請手動選取。'; }
+});
+
+/* ---------- Case link analyzer ---------- */
+document.getElementById('analyzeBtn').addEventListener('click', async () => {
+  const input = document.getElementById('caseInput').value.trim();
+  const status = document.getElementById('analyzeStatus');
+  const resultBox = document.getElementById('analyzeResult');
+  if (!input) { alert('請先貼上案件連結或廣告文字'); return; }
+  const bareUrlOnly = /^https?:\/\/\S+$/.test(input) && input.split(/\s+/).length === 1;
+  if (bareUrlOnly) {
+    const proceed = confirm('這看起來只是一個網址，AI 常常讀不到動態網頁的內容，成功率不高。\n\n建議：改成複製「頁面上看得到的文字」（地址、社區名稱、服務門市）貼上，效果會好很多。\n\n仍要嘗試用這個網址分析嗎？');
+    if (!proceed) return;
+  }
+  status.textContent = '分析中…（會嘗試搜尋網路資訊，可能需要幾秒）';
+  resultBox.style.display = 'none';
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 1000,
+        system: `你是台灣房仲的助理。使用者會貼上一個其他仲介網站的案件連結，或一段廣告文字。
+請盡量找出以下資訊（找不到就留空字串，不要編造）：
+1. community_name：社區或建案名稱
+2. address：物件正確地址（含縣市、路名、門牌，越完整越好）
+3. agent_company：委刊 / 服務的仲介公司與門市名稱
+4. key_store_address：該服務門市的地址（用來借鑰匙）
+如果輸入包含網址，請優先直接用 web_fetch 讀取該網址的內容；如果讀不到內容或找不到需要的資訊，再用 web_search 搜尋該網址或其中關鍵字來補齊。
+只回傳 JSON，不要有任何其他文字、說明或 Markdown 符號，格式必須是：
+{"community_name":"","address":"","agent_company":"","key_store_address":""}`,
+        messages: [{ role: 'user', content: input }],
+        tools: [
+          { type: 'web_fetch_20260318', name: 'web_fetch', max_uses: 5 },
+          { type: 'web_search_20250305', name: 'web_search', max_uses: 3 }
+        ]
+      })
+    });
+    const data = await resp.json();
+    const textBlocks = (data.content || []).filter(b => b.type === 'text').map(b => b.text).join('\n');
+    const cleaned = textBlocks.replace(/```json|```/g, '').trim();
+    const match = cleaned.match(/\{[\s\S]*\}/);
+    const parsed = JSON.parse(match ? match[0] : cleaned);
+
+    document.getElementById('aCommunity').value = parsed.community_name || '';
+    document.getElementById('aAddress').value = parsed.address || '';
+    document.getElementById('aCompany').value = parsed.agent_company || '';
+    document.getElementById('aKeyAddress').value = parsed.key_store_address || '';
+    resultBox.style.display = 'block';
+    status.textContent = '分析完成，請核對後再加入路線（AI 判讀僅供參考）。';
+  } catch (e) {
+    status.textContent = '分析失敗。可能原因：這個網站的內容是打開後才用程式跑出來的（AI 讀不到），或找不到相關資料。建議改貼頁面上的文字內容，或手動填入下方帶看順序。';
+  }
+});
+
+document.getElementById('addPropertyOnly').addEventListener('click', () => {
+  const address = document.getElementById('aAddress').value.trim();
+  const community = document.getElementById('aCommunity').value.trim();
+  if (!address) { alert('請先填入物件地址'); return; }
+  stops.push({ id: cryptoId(), type: 'property', label: community, address, time:'', askPrice:'', info:'', amenities:'', note: '' });
+  renderRoute();
+});
+document.getElementById('addKeyOnly').addEventListener('click', () => {
+  const keyAddress = document.getElementById('aKeyAddress').value.trim();
+  const company = document.getElementById('aCompany').value.trim();
+  if (!keyAddress) { alert('請先填入門市地址'); return; }
+  stops.push({ id: cryptoId(), type: 'key', label: company, address: keyAddress, time:'', askPrice:'', info:'', amenities:'', note: '' });
+  renderRoute();
+});
+document.getElementById('addBoth').addEventListener('click', () => {
+  const address = document.getElementById('aAddress').value.trim();
+  const community = document.getElementById('aCommunity').value.trim();
+  const keyAddress = document.getElementById('aKeyAddress').value.trim();
+  const company = document.getElementById('aCompany').value.trim();
+  if (!address && !keyAddress) { alert('地址與門市地址至少填一個'); return; }
+  if (keyAddress) stops.push({ id: cryptoId(), type: 'key', label: company, address: keyAddress, time:'', askPrice:'', info:'', amenities:'', note: '' });
+  if (address) stops.push({ id: cryptoId(), type: 'property', label: community, address, time:'', askPrice:'', info:'', amenities:'', note: '' });
+  renderRoute();
+});
+document.getElementById('openKeyMap').addEventListener('click', () => {
+  const keyAddress = document.getElementById('aKeyAddress').value.trim();
+  if (!keyAddress) { alert('沒有門市地址可以開啟'); return; }
+  window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(keyAddress)}`, '_blank');
+});
+
+/* ---------- Saved templates (private only, for reuse) ---------- */
+async function loadSavedRoutes(){
+  const listEl = document.getElementById('savedList');
+  listEl.innerHTML = '<div class="saved-empty">讀取中…</div>';
+  try {
+    const idx = await window.storage.get('templates-index', false).catch(()=>null);
+    const ids = idx ? JSON.parse(idx.value) : [];
+    if (!ids.length) { listEl.innerHTML = '<div class="saved-empty">目前沒有已儲存的範本。</div>'; return; }
+    const items = [];
+    for (const id of ids) {
+      try { const r = await window.storage.get('template:' + id, false); if (r) items.push(JSON.parse(r.value)); }
+      catch(e) { /* skip missing */ }
+    }
+    if (!items.length) { listEl.innerHTML = '<div class="saved-empty">目前沒有已儲存的範本。</div>'; return; }
+    items.sort((a,b) => b.createdAt - a.createdAt);
+    listEl.innerHTML = '';
+    items.forEach(route => {
+      const row = document.createElement('div');
+      row.className = 'saved-item';
+      const count = route.stops.filter(s=>s.address.trim()).length;
+      row.innerHTML = `
+        <div><div class="name">${escapeHtml(route.name)}</div><div class="meta">${count} 站</div></div>
+        <button data-action="load" data-id="${route.id}">載入</button>
+        <button data-action="del" data-id="${route.id}" class="del">刪除</button>
+      `;
+      listEl.appendChild(row);
+    });
+  } catch(e) { listEl.innerHTML = '<div class="saved-empty">範本讀取失敗，稍後再試一次。</div>'; }
+}
+
+document.getElementById('savedList').addEventListener('click', async (e) => {
+  const btn = e.target.closest('button');
+  if (!btn) return;
+  const id = btn.dataset.id;
+  const action = btn.dataset.action;
+  if (action === 'load') {
+    try {
+      const r = await window.storage.get('template:' + id, false);
+      if (r) {
+        const route = JSON.parse(r.value);
+        stops = route.stops.map(s => ({id: cryptoId(), type: s.type || 'property', label: s.label, address: s.address, time: s.time||'', askPrice: s.askPrice||'', info: s.info||'', amenities: s.amenities||'', note: s.note || s.price || ''}));
+        if (!stops.length) stops = [{id: cryptoId(), type:'property', label:'', address:'', time:'', askPrice:'', info:'', amenities:'', note:''}];
+        currentShareId = null;
+        document.getElementById('generate').textContent = '產生帶看連結';
+        renderRoute();
+        window.scrollTo({top:0, behavior:'smooth'});
+      }
+    } catch(e) { alert('載入失敗'); }
+  } else if (action === 'del') {
+    try {
+      await window.storage.delete('template:' + id, false);
+      const idx = await window.storage.get('templates-index', false).catch(()=>null);
+      let ids = idx ? JSON.parse(idx.value) : [];
+      ids = ids.filter(x => x !== id);
+      await window.storage.set('templates-index', JSON.stringify(ids), false);
+      loadSavedRoutes();
+    } catch(e) { alert('刪除失敗'); }
+  }
+});
+
+document.getElementById('saveRoute').addEventListener('click', async () => {
+  const filled = stops.filter(s => s.address.trim());
+  if (filled.length < 1) { alert('請至少輸入一個地點，再儲存範本。'); return; }
+  const name = prompt('幫這個範本取個名字（例如：信義區周三場）');
+  if (!name) return;
+  const id = cryptoId();
+  const route = { id, name, stops: stops.map(s => ({type:s.type, label:s.label, address:s.address, time:s.time||'', askPrice:s.askPrice||'', info:s.info||'', amenities:s.amenities||'', note:s.note||''})), createdAt: Date.now() };
+  try {
+    await window.storage.set('template:' + id, JSON.stringify(route), false);
+    const idx = await window.storage.get('templates-index', false).catch(()=>null);
+    const ids = idx ? JSON.parse(idx.value) : [];
+    ids.push(id);
+    await window.storage.set('templates-index', JSON.stringify(ids), false);
+    loadSavedRoutes();
+  } catch(e) { alert('儲存失敗，請稍後再試一次。'); }
+});
+
+/* ---------- Client view ---------- */
+function singlePinLink(address){
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address.trim())}`;
+}
+
+function parseAmenityLine(line){
+  // best-effort: pull the name portion before the first digit (distance) to use as a search query
+  const trimmed = line.trim();
+  if (!trimmed) return null;
+  const match = trimmed.match(/^([^\d]+)/);
+  const namePart = match ? match[1].trim() : trimmed;
+  return { text: trimmed, query: namePart || trimmed };
+}
+
+async function initClientView(routeId){
+  document.getElementById('editorView').style.display = 'none';
+  document.getElementById('clientView').style.display = 'block';
+  const listEl = document.getElementById('clientStops');
+  const btn = document.getElementById('clientMapsBtn');
+  const greetingEl = document.getElementById('clientGreeting');
+  const jumpEl = document.getElementById('jumpRow');
+  try {
+    const r = await window.storage.get('route-public:' + routeId, true);
+    if (!r) throw new Error('not found');
+    const data = JSON.parse(r.value);
+    document.getElementById('clientTitle').textContent = data.title || '看屋路線';
+    const bits = [];
+    if (data.phone) bits.push(`<a href="tel:${escapeHtml(data.phone.replace(/[^0-9+]/g,''))}">📞 ${escapeHtml(data.phone)}</a>`);
+    if (data.line) bits.push(`<a href="${escapeHtml(data.line)}" target="_blank" rel="noopener">LINE 聯絡</a>`);
+    document.getElementById('clientContact').innerHTML = bits.join('　·　');
+
+    const stopsData = data.stops || [];
+    const clientName = data.clientName || '';
+    const greetName = clientName ? `${clientName}您好 😊` : '您好 😊';
+    const visitBit = data.visitLabel ? `${escapeHtml(data.visitLabel)}，` : '';
+    greetingEl.innerHTML = `${escapeHtml(greetName)}<br>${visitBit}為您安排了 ${stopsData.length} 間看屋行程，點下方時間可快速跳到該間；每間下方附上生活圈距離給您參考 🙌`;
+    greetingEl.style.display = 'block';
+
+    if (stopsData.length > 1) {
+      jumpEl.innerHTML = stopsData.map((s, i) => `<a class="jump-pill" href="#stop-${i+1}">${s.time ? escapeHtml(s.time)+' ' : ''}${escapeHtml(s.label) || ('第'+(i+1)+'間')} ▾</a>`).join('');
+      jumpEl.style.display = 'flex';
+    }
+
+    listEl.innerHTML = '';
+    stopsData.forEach((s, i) => {
+      const row = document.createElement('div');
+      row.className = 'stop';
+      row.id = 'stop-' + (i+1);
+      const timeBadge = s.time ? `<div class="time-badge">${escapeHtml(s.time)}</div>` : '';
+      const priceHtml = s.askPrice ? `<div class="stop-price">${escapeHtml(s.askPrice)}</div>` : '';
+      const infoHtml = s.info ? `<div class="stop-info">${escapeHtml(s.info)}</div>` : '';
+      let amenityHtml = '';
+      if (s.amenities && s.amenities.trim()) {
+        const lines = s.amenities.split('\n').map(parseAmenityLine).filter(Boolean);
+        if (lines.length) {
+          amenityHtml = `<div class="amenity-list">${lines.map(a => `<a href="${singlePinLink(a.query)}" target="_blank" rel="noopener">${escapeHtml(a.text)}</a>`).join('')}</div>`;
+        }
+      }
+      row.innerHTML = `
+        <div class="rail"><div class="node">${String(i+1).padStart(2,'0')}</div><div class="thread"></div></div>
+        <div class="card">
+          ${timeBadge}
+          <div class="stop-title">${escapeHtml(s.label) || ('帶看物件 ' + (i+1))}</div>
+          ${priceHtml}
+          <div class="stop-addr">${escapeHtml(s.address)}</div>
+          ${infoHtml}
+          <a class="stop-pin" href="${singlePinLink(s.address)}" target="_blank" rel="noopener">📍 導航到這裡</a>
+          ${amenityHtml}
+        </div>`;
+      listEl.appendChild(row);
+    });
+
+    const mapsUrl = buildMapsLinkFromStops(stopsData, data.travelMode);
+    if (mapsUrl) { btn.href = mapsUrl; } else { btn.style.display = 'none'; }
+  } catch (e) {
+    listEl.innerHTML = '<div class="saved-empty">找不到這個帶看行程，請跟仲介確認連結是否正確。</div>';
+    btn.style.display = 'none';
+  }
+}
+
+/* ---------- Editor init (with optional ?route=&as=agent) ---------- */
+async function initEditor(routeId){
+  if (routeId) {
+    currentShareId = routeId;
+    const notice = document.getElementById('loadNotice');
+    const noticeText = document.getElementById('loadNoticeText');
+    try {
+      const r = await window.storage.get('route-private:' + routeId, false);
+      if (r) {
+        const data = JSON.parse(r.value);
+        stops = (data.stops || []).map(s => ({id: cryptoId(), type: s.type || 'property', label: s.label || '', address: s.address || '', time: s.time||'', askPrice: s.askPrice||'', info: s.info||'', amenities: s.amenities||'', note: s.note || s.price || ''}));
+        if (!stops.length) stops = [{id: cryptoId(), type:'property', label:'', address:'', time:'', askPrice:'', info:'', amenities:'', note:''}];
+        travelMode = data.travelMode || 'driving';
+        document.getElementById('clientNameInput').value = data.clientName || '';
+        document.getElementById('visitLabelInput').value = data.visitLabel || '';
+        document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === travelMode));
+        notice.style.display = 'block';
+        noticeText.textContent = '✅ 已載入這條帶看連結的資料，修改後按「更新帶看連結」即可同步。';
+      } else {
+        notice.style.display = 'block';
+        noticeText.textContent = '⚠ 在這個帳號／裝置上找不到這條連結的私人資料（可能是在別的裝置建立的），下面顯示空白表單，請重新輸入。';
+      }
+    } catch (e) {
+      notice.style.display = 'block';
+      noticeText.textContent = '⚠ 找不到這條連結的私人資料，下面顯示空白表單，請重新輸入。';
+    }
+  }
+  renderRoute();
+  loadProfile();
+  loadSavedRoutes();
+}
+
+/* ---------- Entry point ---------- */
+(function start(){
+  const params = new URLSearchParams(window.location.search);
+  const routeId = params.get('route');
+  const viewAs = params.get('as');
+  if (routeId && viewAs === 'client') {
+    initClientView(routeId);
+  } else {
+    initEditor(routeId);
+  }
+})();
+</script>
+</body>
+</html>
